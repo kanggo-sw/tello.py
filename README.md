@@ -1,1 +1,1 @@
-A collection of python frameworks for [tello-edu](https://www.ryzerobotics.com/tello-edu)
+Next-generation programming language for [tello-edu](https://www.ryzerobotics.com/tello-edu)
