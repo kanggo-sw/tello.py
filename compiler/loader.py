@@ -2,7 +2,6 @@ from typing import List
 
 
 class Loader(object):
-
     def __init__(self, lines: List[str]):
         self._lines: List[str] = [line.strip() for line in lines]
 

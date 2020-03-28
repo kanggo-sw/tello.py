@@ -1,10 +1,15 @@
+from typing import Tuple, List
+
 import compiler
 
 
-def main(file: str):
+def main(file: str) -> List[dict]:
     program_loader = compiler.Loader.from_file(file)
 
-    for command in program_loader.query():
-        print(command)
+    token: list = []
 
-        # TODO: Implement backend
+    for command in program_loader.query():
+
+        token.append(command)
+
+    return token
