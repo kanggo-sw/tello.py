@@ -7,7 +7,6 @@ from typing import Union, List
 from netaddr import IPNetwork
 from netifaces import interfaces, ifaddresses
 
-from lib.core.tello import Tello
 from lib.core.tello_stats import TelloStats
 
 
@@ -175,7 +174,11 @@ class TelloKernel(object):
                     print("[+]Found Tello.The Tello ip is:{}\n".format(ip))
                     self.tello_ip_list.append(ip)
                     self.last_response_index[ip] = 100
+
+                    # It fixes circular dependent imports.
+                    from lib.core.tello import Tello
                     self.tello_list.append(Tello(ip, self))
+
                     self.str_cmd_index[ip] = 1
                 response_sof_part1 = ord(self.response[0])
                 response_sof_part2 = ord(self.response[1])
