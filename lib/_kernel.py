@@ -5,9 +5,9 @@ from time import time, sleep
 from typing import Union, List
 
 from netaddr import IPNetwork
-from netifaces import interfaces, ifaddresses
 
 from lib.core.tello_stats import TelloStats
+from lib.networking.subnet import get_subnets
 
 
 class TelloKernel(object):
@@ -41,7 +41,7 @@ class TelloKernel(object):
         :return: None
         """
         print("[+]Searching for {} available Tello...\n".format(num))
-        subnets, address = self.get_subnets()
+        subnets, address = get_subnets()
         possible_addr = []
         for subnet, netmask in subnets:
             for ip in IPNetwork("%s/%s" % (subnet, netmask)):
@@ -49,8 +49,10 @@ class TelloKernel(object):
                 if str(ip).split(".")[3] == "0" or str(ip).split(".")[3] == "255":
                     continue
                 possible_addr.append(str(ip))
+        _count = 0
         while len(self.tello_ip_list) < num:
-            print("[!]Trying to find Tello in subnets...\n")
+            _count += 1
+            print("[{}]Trying to find Tello in subnets...\n".format(_count))
             # delete already found Tello
             for tello_ip in self.tello_ip_list:
                 if tello_ip in possible_addr:
@@ -68,35 +70,6 @@ class TelloKernel(object):
         for ip in self.tello_ip_list:
             temp[ip] = self.log[ip]
         self.log = temp
-
-    @staticmethod
-    def get_subnets():
-        """
-        Look through the server's internet connection and
-        returns subnet addresses and server ip
-        :return: list[str]: subnets
-                 list[str]: addr_list
-        """
-        subnets = []
-        ifaces = interfaces()
-        addr_list = []
-        for myiface in ifaces:
-            addrs = ifaddresses(myiface)
-            if AF_INET not in addrs:
-                continue
-            # Get ipv4 stuff
-            ipinfo = addrs[AF_INET][0]
-            address = ipinfo["addr"]
-            netmask = ipinfo["netmask"]
-            # limit range of search. This will work for router subnets
-            if netmask != "255.255.255.0":
-                continue
-            # Create ip object and get
-            cidr = IPNetwork("%s/%s" % (address, netmask))
-            network = cidr.network
-            subnets.append((network, netmask))
-            addr_list.append(address)
-        return subnets, addr_list
 
     def get_tello_list(self):
         return self.tello_list
@@ -161,6 +134,8 @@ class TelloKernel(object):
                 return
 
     def _receive_thread(self):
+        # It fixes circular dependent imports.
+        from lib.core.tello import Tello
         while True:
             try:
                 self.response, ip = self.socket.recvfrom(1024)
@@ -175,8 +150,6 @@ class TelloKernel(object):
                     self.tello_ip_list.append(ip)
                     self.last_response_index[ip] = 100
 
-                    # It fixes circular dependent imports.
-                    from lib.core.tello import Tello
                     self.tello_list.append(Tello(ip, self))
 
                     self.str_cmd_index[ip] = 1
@@ -200,5 +173,5 @@ class TelloKernel(object):
             except error as err:
                 print("error caught!\n{}".format(err))
 
-    def get_log(self):
+    def get_log(self) -> defaultdict:
         return self.log

@@ -10,5 +10,5 @@ class Tello(object):
         self._tello_ip = tello_ip
         self._kernel = kernel
 
-    def send_command(self, command):
-        return self._kernel.send_command(command, self._tello_ip)
+    def send_command(self, command: str):
+        return self._kernel.send_command(str(command), self._tello_ip)

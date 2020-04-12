@@ -1,3 +1,5 @@
+# TODO: This is an temporary module for compatibility and need to rewrite.
+
 import os
 import queue
 from threading import Thread
@@ -39,7 +41,7 @@ def all_got_response(_kernel):
 
 
 def save_log(_kernel):
-    log = _kernel.get_log()
+    '''log = _kernel.get_log()
     if not os.path.exists("log"):
         os.makedirs("log")
     out = open("log/" + start_time + ".txt", "w")
@@ -51,7 +53,7 @@ def save_log(_kernel):
             # stat.print_stats()
             _stat = stat.return_stats()
             out.write(_stat)
-        out.write("\n")
+        out.write("\n")'''
 
 
 def check_timeout(_start_time, _end_time, _timeout):
@@ -73,6 +75,7 @@ class ControllerTest(object):
             sn_ip_dict = {}
             id_sn_dict = {}
             ip_fid_dict = {}
+
             for command in commands:
                 if command != "" and command != "\n":
                     command = command.rstrip()
@@ -103,6 +106,7 @@ class ControllerTest(object):
                             # index starbattery_checkt from 1
                             id_list.append(int(_id) - 1)
                         action = str(command.partition(">")[2])
+                        print(_id, action)
                         # push command to pools
                         for tello_id in id_list:
                             tmp_sn = id_sn_dict[tello_id]
@@ -192,6 +196,7 @@ class ControllerTest(object):
                             print(
                                 "[Quit_Sync]Fail Sync:Timeout exceeded, continue...\n"
                             )
+
             # wait till all commands are executed
             while not all_queue_empty(execution_pools):
                 sleep(0.5)
@@ -200,7 +205,12 @@ class ControllerTest(object):
             while not all_got_response(tello_kernel):
                 sleep(0.5)
             save_log(tello_kernel)
-        except:
+        except KeyboardInterrupt:
+            print("[Quit_ALL]Exit requested. Sending land to all drones...\n")
+            for ip in tello_kernel.tello_ip_list:
+                tello_kernel.socket.sendto("land".encode("utf-8"), (ip, 8889))
+        except Exception as e:
+            print(e)
             print(
                 "[Quit_ALL]Multi_Tello_Task got exception. Sending land to all drones...\n"
             )
