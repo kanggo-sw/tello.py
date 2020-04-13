@@ -29,6 +29,6 @@ def parse(raw_code: str) -> Token:
     # TODO: Ignore comments
     # TODO: delay
     else:
-        raise NotImplementedError("Error while parsing")
+        return NotImplemented
 
     return _token

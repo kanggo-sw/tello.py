@@ -9,10 +9,14 @@ def main(file: str) -> List[Token]:
 
     tokens_iter: List[Token] = []
 
-    for string in program_loader.query():
+    for line, string in enumerate(program_loader.query()):
         if not string:
             continue
+
         token: Token = parse(string.strip())
+
+        if token is NotImplemented:
+            raise NotImplementedError("{} (Line {})".format(string, line))
 
         tokens_iter.append(token)
 
