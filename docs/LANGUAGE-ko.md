@@ -46,3 +46,30 @@ Tello ID와 `Serial Number`를 바인딩합니다.
 ## Tello SDK Commands
 [Tello SDK 2.0 User Guide](https://dl-cdn.ryzerobotics.com/downloads/Tello/Tello%20SDK%202.0%20User%20Guide.pdf)
 
+# 추가 기능
+아래의 명령은 `Tello.py`에서 제공하며 다른 라이브러리에서는 사용할 수 없습니다.
+
+## macro [NAME]:
+설명보다는 보는게 편합니다..
+```
+*> up 30
+*> down 10
+*> right 5
+*> left 5
+
+*> up 30
+*> down 10
+*> right 5
+*> left 5
+```
+이는 다음과 같습니다:
+```
+macro myMacro:
+*> up 30
+*> down 10
+*> right 5
+*> left 5
+
+myMacro
+myMacro
+```
