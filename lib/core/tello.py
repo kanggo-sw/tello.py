@@ -7,8 +7,8 @@ class Tello(object):
     """
 
     def __init__(self, tello_ip, kernel: TelloKernel):
-        self._tello_ip = tello_ip
+        self.tello_ip = tello_ip
         self._kernel = kernel
 
     def send_command(self, command: str):
-        return self._kernel.send_command(str(command), self._tello_ip)
+        return self._kernel.send_command(str(command), self.tello_ip)

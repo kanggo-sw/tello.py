@@ -41,7 +41,7 @@ def all_got_response(_kernel):
 
 
 def save_log(_kernel):
-    '''log = _kernel.get_log()
+    """log = _kernel.get_log()
     if not os.path.exists("log"):
         os.makedirs("log")
     out = open("log/" + start_time + ".txt", "w")
@@ -53,7 +53,7 @@ def save_log(_kernel):
             # stat.print_stats()
             _stat = stat.return_stats()
             out.write(_stat)
-        out.write("\n")'''
+        out.write("\n")"""
 
 
 def check_timeout(_start_time, _end_time, _timeout):

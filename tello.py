@@ -1,13 +1,14 @@
 import logging
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from pprint import pprint
 
 import compiler
-from lib.networking import controller
+from lib.networking.controller_v2 import execute, tello_kernel
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format="[%(asctime)s][%(levelname)s] in %(funcName)s(): %(message)s",
+    format="[%(asctime)s][%(levelname)s] in function %(funcName)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
 )
@@ -26,4 +27,17 @@ if __name__ == "__main__":
         code = compiler.main(args.code)
         ...
 
-        controller.ControllerTest.original(args.code)
+        pprint(code)
+
+        try:
+            execute(source=code)
+        except NotImplementedError:
+            raise
+        except RuntimeError:
+            raise
+        except Exception as e:
+            print(e)
+            print("Landing all drones...")
+            for ip in tello_kernel.tello_ip_list:
+                tello_kernel.socket.sendto("land".encode("utf-8"), (ip, 8889))
+            print("Done.")
