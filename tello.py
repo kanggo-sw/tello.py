@@ -1,6 +1,6 @@
 import logging
 import sys
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 from pprint import pprint
 
 import compiler
@@ -41,3 +41,6 @@ if __name__ == "__main__":
             for ip in tello_kernel.tello_ip_list:
                 tello_kernel.socket.sendto("land".encode("utf-8"), (ip, 8889))
             print("Done.")
+
+    if args == Namespace():
+        ...
