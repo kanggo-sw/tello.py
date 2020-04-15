@@ -25,13 +25,15 @@ def parse_string(raw_code: str) -> Token:
     elif raw_code[:4] in ("scan", "sync"):
         tokens = search(r"(?P<c>\w{4}) *(?P<n>[0-9]+)", raw_code)
         _token = Token(None, tokens.group("c"), tokens.group("n"))
+    elif raw_code[:5] == "delay":
+        tokens = search(r"delay *(?P<n>[0-9]+)", raw_code)
+        _token = Token(None, "delay", tokens.group("n"))
     elif raw_code[:13] == "battery_check":
         tokens = search(r"battery_check *(?P<n>[0-9]+)", raw_code)
         _token = Token(None, "battery_check", tokens.group("n"))
     elif "=" in raw_code:
         tokens = search(r"(?P<id>[0-9]+) *= *(?P<sn>[0-9a-zA-Z]+)", raw_code)
         _token = Token(tokens.group("id"), "=", tokens.group("sn"))
-    # TODO: delay
     else:
         return NotImplemented
 
