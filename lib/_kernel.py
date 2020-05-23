@@ -20,6 +20,7 @@ class TelloKernel(object):
         self.local_port: int = local_port
 
         self.socket: socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.local_ip, self.local_port))
 
         self.receive_thread: Thread = Thread(target=self._receive_thread)

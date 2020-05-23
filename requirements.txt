@@ -1,2 +1,5 @@
-netifaces
-netaddr
+netifaces~=0.10.9
+netaddr~=0.7.19
+
+opencv-python~=4.1.0.25
+setuptools~=40.6.2
