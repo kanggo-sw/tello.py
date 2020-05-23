@@ -3,6 +3,15 @@ battery_check 25
 correct_ip
 1=0TQDG8EEDB51PF
 2=0TQDG8PEDBMP41
+
 *>takeoff
 sync 10
+
+*>up 30
+sync 10
+
+1>up 15
+2>down 15
+sync 10
+
 *>land

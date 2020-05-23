@@ -1,6 +1,6 @@
 import logging
 import sys
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from argparse import ArgumentParser, Namespace
 from pprint import pprint
 
 import compiler
@@ -14,7 +14,9 @@ logging.basicConfig(
 )
 
 if __name__ == "__main__":
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(
+        # formatter_class=ArgumentDefaultsHelpFormatter
+    )
 
     run_subparser = parser.add_subparsers(help="Tello script interpreter")
     run_parser = run_subparser.add_parser("run")
