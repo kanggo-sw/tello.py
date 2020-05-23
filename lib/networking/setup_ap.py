@@ -4,7 +4,6 @@ localhost: str = "192.168.10.1"
 binding_port: int = 8889
 
 
-# TODO: Recognize tello's wifi name
 def setup_ap(ssid: str, password: str):
     """
     Sets up tello
@@ -25,9 +24,9 @@ def setup_ap(ssid: str, password: str):
 
     address: tuple = (localhost, binding_port)
 
-    res, _ = tello_socket.sendto("command".encode("utf-8"), address)
-    if res.upper() != "OK":
-        raise
+    tello_socket.sendto("command".encode("utf-8"), address)
+    # if res.upper() != "OK":
+    #     raise
 
     tello_socket.sendto(
         "ap {ssid} {password}".format(ssid=ssid, password=password).encode("utf-8"),

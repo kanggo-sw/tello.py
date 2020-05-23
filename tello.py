@@ -38,11 +38,14 @@ if __name__ == "__main__":
         except RuntimeError:
             raise
         except Exception as e:
+            print("An unhandled exception occurred.")
             print(e)
             print("Landing all drones...")
             for ip in tello_kernel.tello_ip_list:
                 tello_kernel.socket.sendto("land".encode("utf-8"), (ip, 8889))
             print("Done.")
+
+            raise
 
     if args == Namespace():
         ...

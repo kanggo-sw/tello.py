@@ -3,7 +3,7 @@ import time
 from datetime import date
 from queue import Queue
 from threading import Thread
-from typing import List, Dict, Iterable
+from typing import List, Dict, Iterable, Any
 
 from compiler.parser import Token
 from lib._kernel import TelloKernel
@@ -67,7 +67,7 @@ def execute(source: Iterable[Token]) -> bool:
     tello_list: List[Tello] = []
     execution_pools: List[Queue[str]] = []
 
-    sn_ip_dict: Dict = dict()
+    sn_ip_dict: Dict[str, str] = dict()
     id_sn_dict: Dict = dict()
     ip_fid_dict: Dict = dict()
 
@@ -79,8 +79,8 @@ def execute(source: Iterable[Token]) -> bool:
             if token.command == "=":
                 if token.target == "*":
                     raise SyntaxError
-                drone_id = int(token.target)
-                drone_sn = token.args
+                drone_id: int = int(token.target)
+                drone_sn: str = token.args
                 id_sn_dict[drone_id - 1] = drone_sn
                 print(
                     (
@@ -97,9 +97,14 @@ def execute(source: Iterable[Token]) -> bool:
                     _id_list.append(int(token.target) - 1)
 
                 for _id in _id_list:
-                    execution_pools[ip_fid_dict[sn_ip_dict[id_sn_dict[_id]]]].put(
-                        "{} {}".format(token.command, token.args)
-                    )
+                    if token.args is not None:
+                        execution_pools[ip_fid_dict[sn_ip_dict[id_sn_dict[_id]]]].put(
+                            "{} {}".format(token.command, token.args)
+                        )
+                    else:
+                        execution_pools[ip_fid_dict[sn_ip_dict[id_sn_dict[_id]]]].put(
+                            token.command,
+                        )
 
         else:
             if token.command == "sync":
@@ -127,7 +132,7 @@ def execute(source: Iterable[Token]) -> bool:
 
             elif token.command == "scan":
                 _num_of_tello = int(token.args)
-                tello_kernel.find_avaliable_tello(_num_of_tello)
+                tello_kernel.find_available_tello(_num_of_tello)
                 tello_list = tello_kernel.get_tello_list()
                 execution_pools: List[Queue[str]] = create_execution_pools(
                     _num_of_tello
@@ -184,7 +189,7 @@ def execute(source: Iterable[Token]) -> bool:
                 while not did_all_get_response(tello_kernel):
                     time.sleep(0.5)
                 for tello_log in list(tello_kernel.get_log().values()):
-                    sn = str(tello_log[-1].response)
+                    sn: str = tello_log[-1].response.decode()
                     tello_ip = str(tello_log[-1].drone_ip)
                     sn_ip_dict[sn] = tello_ip
 

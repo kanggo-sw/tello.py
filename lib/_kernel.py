@@ -1,5 +1,5 @@
+import socket
 from collections import defaultdict
-from socket import socket, AF_INET, SOCK_DGRAM, error
 from threading import Thread
 from time import time, sleep
 from typing import Union, List
@@ -19,7 +19,7 @@ class TelloKernel(object):
         self.local_ip: str = local_ip
         self.local_port: int = local_port
 
-        self.socket: socket = socket(AF_INET, SOCK_DGRAM)
+        self.socket: socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.local_ip, self.local_port))
 
         self.receive_thread: Thread = Thread(target=self._receive_thread)
@@ -34,9 +34,9 @@ class TelloKernel(object):
         self.last_response_index: dict = {}
         self.str_cmd_index: dict = {}
 
-    def find_avaliable_tello(self, num):
+    def find_available_tello(self, num):
         """
-        Find avaliable tello in server's subnets
+        Find available tello in server's subnets
         :param num: Number of Tello this method is expected to find
         :return: None
         """
@@ -140,12 +140,11 @@ class TelloKernel(object):
         while True:
             try:
                 self.response, ip = self.socket.recvfrom(1024)
-                self.response: Union[bytes, List[bytes], None]
                 ip = "".join(str(ip[0]))
                 if (
                     ip not in self.tello_ip_list
                     and hasattr(self.response, "upper")
-                    and self.response.upper() == "OK"
+                    and self.response.upper() == "OK".encode(encoding="utf8")
                 ):
                     print("[+]Found Tello.The Tello ip is:{}\n".format(ip))
                     self.tello_ip_list.append(ip)
@@ -154,10 +153,10 @@ class TelloKernel(object):
                     self.tello_list.append(Tello(ip, self))
 
                     self.str_cmd_index[ip] = 1
-                response_sof_part1 = ord(self.response[0])
-                response_sof_part2 = ord(self.response[1])
+                response_sof_part1 = self.response[0]
+                response_sof_part2 = self.response[1]
                 if response_sof_part1 == 0x52 and response_sof_part2 == 0x65:
-                    response_index = ord(self.response[3])
+                    response_index = self.response[3]
                     if response_index != self.last_response_index[ip]:
                         print(
                             "[Multi_Response] ----Multi_Receive----IP:%s----Response:   %s ----\n"
@@ -171,8 +170,8 @@ class TelloKernel(object):
                         % (ip, self.response)
                     )
                     self.log[ip][-1].add_response(self.response, ip)
-            except error as err:
-                print("error caught!\n{}".format(err))
+            except socket.error as exc:
+                print("[Exception_Error]Caught exception socket.error : %s\n" % exc)
 
     def get_log(self) -> defaultdict:
         return self.log
