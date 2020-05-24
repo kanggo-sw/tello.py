@@ -32,7 +32,9 @@ class TelloDevice(object):
         """
         if not self.flight_complete:
             self.max_cmd_id += 1
-            self.command_queue.append(TelloCommand(self.max_cmd_id, command, command_type, on_error))
+            self.command_queue.append(
+                TelloCommand(self.max_cmd_id, command, command_type, on_error)
+            )
             return self.max_cmd_id
         else:
             return -1
@@ -108,7 +110,7 @@ class TelloDevice(object):
                         return log
                 # Sleep briefly at the end of each loop, to prevent excessive CPU usage
                 time.sleep(0.01)
-            raise RuntimeError('Tello log entry not found!!')
+            raise RuntimeError("Tello log entry not found!")
 
 
 class TelloCommand(object):

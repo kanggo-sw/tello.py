@@ -12,6 +12,8 @@ tello.down(10, 2)
 tello.up(10, 2)
 tello.down(10, 1)
 
+tello.wait_sync()
+
 tello.land()
 
 print("Done.")

@@ -1,3 +1,4 @@
+import logging
 import socket
 import threading
 import time
@@ -9,7 +10,6 @@ from lib.networking.subnet import get_subnets
 
 
 class Kernel(object):
-
     def __init__(self):
         """ Open sockets ready for communicating with one or more Tellos.
 
@@ -21,8 +21,10 @@ class Kernel(object):
 
         # Socket for primary bi-directional communication with Tello
         self.control_port = 8889
-        self.control_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # socket for sending cmd
-        self.control_socket.bind(('', self.control_port))
+        self.control_socket = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM
+        )  # socket for sending cmd
+        self.control_socket.bind(("", self.control_port))
 
         # Socket for receiving status messages from Tello - not activated here
         self.status_port = 8890
@@ -58,8 +60,8 @@ class Kernel(object):
 
         # Create a list of possible IP addresses to search
         for subnet, netmask in subnets:
-            for ip in netaddr.IPNetwork('%s/%s' % (subnet, netmask)):
-                if not (first_ip <= int(str(ip).split('.')[3]) <= last_ip):
+            for ip in netaddr.IPNetwork("%s/%s" % (subnet, netmask)):
+                if not (first_ip <= int(str(ip).split(".")[3]) <= last_ip):
                     continue
                 # Don't add the server's address to the list
                 if str(ip) in address:
@@ -69,7 +71,8 @@ class Kernel(object):
         # Continue looking until we've found them all
         num = len(sn_list)
         while len(self.tellos) < num:
-            print('[Tello Search]Looking for %d Tello(s)' % (num - len(self.tellos)))
+            # print('[Tello Search]Looking for %d Tello(s)' % (num - len(self.tellos)))
+            logging.debug("Search {} Tello(s)")
 
             # Remove any found Tellos from the list to search
             for tello_ip in [tello.ip for tello in self.tellos]:
@@ -78,7 +81,7 @@ class Kernel(object):
 
             # Try contacting Tello via each possible_addr
             for ip in possible_addr:
-                self.control_socket.sendto('command'.encode(), (ip, self.control_port))
+                self.control_socket.sendto("command".encode(), (ip, self.control_port))
 
             # Responses to the command above will be picked up in receive_thread.  Here we check regularly to see if
             #  they've all been found, so we can break out quickly.  But after several failed attempts, go around the
@@ -90,13 +93,15 @@ class Kernel(object):
 
         # Once we have all Tellos, startup a command_handler for each.  These manage the command queues for each Tello.
         for tello in self.tellos:
-            command_handler_thread = threading.Thread(target=self._command_handler, args=(tello,))
+            command_handler_thread = threading.Thread(
+                target=self._command_handler, args=(tello,)
+            )
             command_handler_thread.daemon = True
             command_handler_thread.start()
 
         # Start the status_handler, if needed.  This receives and constantly updates the status of each Tello.
         if get_status:
-            self.status_socket.bind(('', self.status_port))
+            self.status_socket.bind(("", self.status_port))
             self.status_thread = threading.Thread(target=self._status_thread)
             self.status_thread.daemon = True
             self.status_thread.start()
@@ -105,7 +110,9 @@ class Kernel(object):
         tello_cmd_id = []
         for tello in self.tellos:
             # Save the tello together with the returned cmd_id, so we can match the responses with the right Tello below
-            tello_cmd_id.append((tello, tello.add_to_command_queue('sn?', 'Read', None)))
+            tello_cmd_id.append(
+                (tello, tello.add_to_command_queue("sn?", "Read", None))
+            )
 
         # Assign the sn to each Tello, as responses become available.
         # Note that log_wait_response will block until the response is received.
@@ -137,7 +144,7 @@ class Kernel(object):
         """
         # Determine which Tellos to use, and add the command to the appropriate Tello's queue.
         cmd_ids = []
-        if tello_num == 'All':
+        if tello_num == "All":
             for tello in self.tellos:
                 # If command is for all tellos, send to each and save the cmd_id in a list
                 cmd_id = tello.add_to_command_queue(command, command_type, on_error)
@@ -168,7 +175,7 @@ class Kernel(object):
         for tello in self.tellos:
             if tello.num == num:
                 return tello
-        raise RuntimeError('Tello not found!')
+        raise RuntimeError("Tello not found!")
 
     def close_connections(self):
         """ Close all kernel - to tidy up before exiting """
@@ -189,7 +196,7 @@ class Kernel(object):
         for tello in self.tellos:
             if tello.ip == ip:
                 return tello
-        raise RuntimeError('Tello not found!')
+        raise RuntimeError("Tello not found!")
 
     def _send_command(self, tello, cmd_id, command, command_type, on_error, timeout=10):
         """ Actually send a command to the Tello at specified IP address, recording details in the Tello's log.
@@ -206,19 +213,31 @@ class Kernel(object):
 
         # Then send the command
         self.control_socket.sendto(command.encode(), (tello.ip, self.control_port))
-        print('[Command  %s]Sent cmd: %s' % (tello.ip, command))
+        # print('[Command  %s]Sent cmd: %s' % (tello.ip, command))
+        logging.debug("Send '{}' to {}".format(command, tello.ip))
 
         # Wait until a response has been received, and handle timeout
         time_sent = time.time()
         while log_entry.response is None:
             now = time.time()
             if now - time_sent > timeout:
-                print('[Command  %s]Failed to send: %s' % (tello.ip, command))
+                # print('[Command  %s]Failed to send: %s' % (tello.ip, command))
+                logging.error(
+                    "Timeout: Send '{}' to {} exceeded {} seconds".format(
+                        command, tello.ip, timeout
+                    )
+                )
                 log_entry.success = False
-                log_entry.response = ''
+                log_entry.response = ""
                 if log_entry.on_error is not None:
-                    tello.add_to_command_queue(log_entry.on_error, log_entry.command_type, None)
-                    print('[Command  %s]Queuing alternative cmd: %s' % (tello.ip, log_entry.on_error))
+                    tello.add_to_command_queue(
+                        log_entry.on_error, log_entry.command_type, None
+                    )
+                    # print('[Command  %s]Queuing alternative cmd: %s' % (tello.ip, log_entry.on_error))
+                    logging.debug(
+                        "[Command  %s]Queuing alternative command: %s"
+                        % (tello.ip, log_entry.on_error)
+                    )
                 return
             # Sleep briefly at the end of each loop, to prevent excessive CPU usage
             time.sleep(0.01)
@@ -244,7 +263,13 @@ class Kernel(object):
             # Pop command off the Tello's queue, then send the command.
             # Note as part of send_command the same details will be added back into Tello's log.
             command = tello.command_queue.pop(0)
-            self._send_command(tello, command.cmd_id, command.command, command.command_type, command.on_error)
+            self._send_command(
+                tello,
+                command.cmd_id,
+                command.command,
+                command.command_type,
+                command.on_error,
+            )
 
     def _receive_thread(self):
         """ Listen continually to responses from the Tello - should run in its own thread.
@@ -264,8 +289,10 @@ class Kernel(object):
                 ip = str(ip[0])
 
                 # Capture Tellos when they respond for the first time
-                if response.lower() == 'ok' and ip not in [tello.ip for tello in self.tellos]:
-                    print('[Tello Search]Found Tello on IP %s' % ip)
+                if response.lower() == "ok" and ip not in [
+                    tello.ip for tello in self.tellos
+                ]:
+                    logging.debug("Found Tello on IP {}".format(ip))
                     self.tellos.append(TelloDevice(ip))
                     continue
 
@@ -275,32 +302,42 @@ class Kernel(object):
 
                 # Determine if the response was ok / error (or reading a value)
                 send_on_error = False
-                if log_entry.command_type in ['Control', 'Set']:
-                    if response == 'ok':
+                if log_entry.command_type in ["Control", "Set"]:
+                    if response == "ok":
                         log_entry.success = True
                     else:
                         log_entry.success = False
                         if log_entry.on_error is not None:
                             # If this command wasn't successful, and there's an on_error entry, flag to send it later.
                             send_on_error = True
-                elif log_entry.command_type == 'Read':
+                elif log_entry.command_type == "Read":
                     # Assume Read commands are always successful... not aware they can return anything else!?
                     log_entry.success = True
                 else:
-                    print('[Response %s]Invalid command_type: %s' % (ip, log_entry.command_type))
+                    # print('[Response %s]Invalid command_type: %s' % (ip, log_entry.command_type))
+                    logging.error(
+                        "%s: Invalid command_type: %s" % (ip, log_entry.command_type)
+                    )
                 # Save .response *after* .success, as elsewhere we use .response as a check to move on - avoids race
                 # conditions across the other running threads, which might otherwise try to use .success before saved.
                 log_entry.response = response
-                print('[Response %s]Received: %s' % (ip, response))
+                # print('[Response %s]Received: %s' % (ip, response))
+                logging.debug("%s: %s" % (ip, response))
                 # If required, queue the alternative command - assume same command type as the original.
                 if send_on_error:
-                    tello.add_to_command_queue(log_entry.on_error, log_entry.command_type, None)
-                    print('[Command  %s]Queuing alternative cmd: %s' % (ip, log_entry.on_error))
+                    tello.add_to_command_queue(
+                        log_entry.on_error, log_entry.command_type, None
+                    )
+                    # print('[Command  %s]Queuing alternative cmd: %s' % (ip, log_entry.on_error))
+                    logging.error(
+                        "[Command  %s]Queuing alternative cmd: %s"
+                        % (ip, log_entry.on_error)
+                    )
 
-            except socket.error as exc:
+            except socket.error:
                 if not self.terminate_kernel:
                     # Report socket errors, but only if we've not told it to terminate_kernel.
-                    print('[Socket Error]Exception socket.error : %s' % exc)
+                    logging.exception("An socket error occurred!")
 
     def _status_thread(self):
         """ Listen continually to status from the Tellos - should run in its own thread.
@@ -312,18 +349,19 @@ class Kernel(object):
             try:
                 response, ip = self.status_socket.recvfrom(1024)
                 response = response.decode()
-                if response == 'ok':
+                if response == "ok":
                     continue
-                ip = ''.join(str(ip[0]))
+                ip = "".join(str(ip[0]))
                 tello = self._get_tello(ip)
                 tello.status.clear()
-                status_parts = response.split(';')
+                status_parts = response.split(";")
                 for status_part in status_parts:
-                    key_value = status_part.split(':')
+                    key_value = status_part.split(":")
                     if len(key_value) == 2:
                         tello.status[key_value[0]] = key_value[1]
 
-            except socket.error as exc:
+            except socket.error:
                 if not self.terminate_kernel:
                     # Report socket errors, but only if we've not told it to terminate_kernel.
-                    print('[Socket Error]Exception socket.error : %s' % exc)
+                    # print('[Socket Error]Exception socket.error : %s' % exc)
+                    logging.exception("An socket error occurred!")
