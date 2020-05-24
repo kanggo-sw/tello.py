@@ -3,11 +3,11 @@ import time
 from datetime import date
 from queue import Queue
 from threading import Thread
-from typing import List, Dict, Iterable, Any
+from typing import List, Dict, Iterable
 
 from compiler.parser import Token
-from lib._kernel import TelloKernel
-from lib.core.tello import Tello
+from lib.tello.swarm import TelloKernel
+from lib.core.tello_device import Tello
 
 start_time: str = date.today().isoformat()
 

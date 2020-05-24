@@ -136,7 +136,7 @@ class TelloKernel(object):
 
     def _receive_thread(self):
         # It fixes circular dependent imports.
-        from lib.core.tello import Tello
+        from lib.core.tello_device import Tello
 
         while True:
             try:

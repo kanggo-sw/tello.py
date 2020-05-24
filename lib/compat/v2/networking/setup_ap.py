@@ -33,5 +33,5 @@ def setup_ap(ssid: str, password: str):
         address,
     )
     response, ip = tello_socket.recvfrom(100)
-
-    print("Response from {ip}: {resp}".format(ip=ip, resp=response.decode()))
+    # TODO: Use logging, not a print
+    print("from {ip}: {resp}".format(ip=ip, resp=response))

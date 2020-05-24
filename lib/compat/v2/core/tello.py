@@ -1,4 +1,4 @@
-from lib._kernel import TelloKernel
+from lib.tello.swarm import TelloKernel
 
 
 class Tello(object):
