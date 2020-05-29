@@ -34,7 +34,11 @@ def setup_ap(ssid: str, password: str):
     )
     response, ip = tello_socket.recvfrom(100)
 
-    if isinstance(response, bytes) and response.decode().upper() == "OK":
-        print("Done.")
-    else:
-        raise ConnectionError("Response from {}: {}".format(ip, response))
+    try:
+        if isinstance(response, bytes) and response.decode().upper() == "OK":
+            print("Done.")
+        else:
+            raise ConnectionError("Response from {}: {}".format(ip, response))
+
+    except UnicodeDecodeError:
+        print(ip, response)
