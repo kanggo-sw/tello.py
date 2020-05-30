@@ -12,4 +12,3 @@ if __name__ == "__main__":
     pw = sys.argv[2]
 
     setup_ap(ssid=ssid, password=pw)
-    print("Completed.")
