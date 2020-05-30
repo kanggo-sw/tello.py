@@ -72,7 +72,7 @@ class Kernel(object):
         num = len(sn_list)
         while len(self.tellos) < num:
             # print('[Tello Search]Looking for %d Tello(s)' % (num - len(self.tellos)))
-            logging.debug("Search {} Tello(s)")
+            logging.debug("Search {} Tello(s)".format(num - len(self.tellos)))
 
             # Remove any found Tellos from the list to search
             for tello_ip in [tello.ip for tello in self.tellos]:
