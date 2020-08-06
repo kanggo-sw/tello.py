@@ -8,7 +8,7 @@ import threading
 import time
 
 # Address of this computer and port simulating Tello
-tello_address = ('127.0.0.1', 8889)
+tello_address = ("127.0.0.1", 8889)
 
 # Create a local socket and bind to it
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -16,8 +16,26 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind(tello_address)
 
 # Tello's address
-tello_commands = ["command", "takeoff", "land", "forward", "back", "up", "down", "left", "right", "go", "curve", "cw",
-                  "ccw", "flip", "speed", "Speed?", "Battery?", "Time?"]
+tello_commands = [
+    "command",
+    "takeoff",
+    "land",
+    "forward",
+    "back",
+    "up",
+    "down",
+    "left",
+    "right",
+    "go",
+    "curve",
+    "cw",
+    "ccw",
+    "flip",
+    "speed",
+    "Speed?",
+    "Battery?",
+    "Time?",
+]
 
 
 def recv():
@@ -25,13 +43,17 @@ def recv():
     while True:
         try:
             data, address = sock.recvfrom(2048)
-            print("Received command: " + data.decode(encoding="utf-8") + " from: {0}".format(address))
+            print(
+                "Received command: "
+                + data.decode(encoding="utf-8")
+                + " from: {0}".format(address)
+            )
             reply = response(data.decode(encoding="utf-8"))
             # Delay before we respond back
             time.sleep(1)
             sock.sendto(reply, address)
         except Exception as e:
-            print('\nExit . . .\n' + str(e))
+            print("\nExit . . .\n" + str(e))
             break
 
 

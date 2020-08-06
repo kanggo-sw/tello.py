@@ -19,8 +19,15 @@ import threading
 class Tello(object):
     """Wrapper to simply interactions with the Ryze Tello drone."""
 
-    def __init__(self, local_ip, local_port, imperial=True, command_timeout=.3, tello_ip='192.168.10.1',
-                 tello_port=8889):
+    def __init__(
+        self,
+        local_ip,
+        local_port,
+        imperial=True,
+        command_timeout=0.3,
+        tello_ip="192.168.10.1",
+        tello_port=8889,
+    ):
         """Binds to the local IP/port and puts the Tello into command mode.
         Args:
             local_ip (str): Local IP address to bind.
@@ -48,9 +55,9 @@ class Tello(object):
         self.receive_thread.daemon = True
 
         self.receive_thread.start()
-        print(self.send_command('command'))
-        if self.send_command('command') != 'OK':
-            raise RuntimeError('Tello rejected attempt to enter command mode')
+        print(self.send_command("command"))
+        if self.send_command("command") != "OK":
+            raise RuntimeError("Tello rejected attempt to enter command mode")
 
     def __del__(self):
         """Closes the local socket."""
@@ -75,7 +82,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.send_command('flip %s' % direction)
+        return self.send_command("flip %s" % direction)
 
     def get_battery(self):
         """Returns percent battery life remaining.
@@ -83,7 +90,7 @@ class Tello(object):
             int: Percent battery life remaining.
         """
 
-        battery = self.send_command('battery?')
+        battery = self.send_command("battery?")
 
         battery = int(battery)
 
@@ -95,7 +102,7 @@ class Tello(object):
             int: Seconds elapsed during flight.
         """
 
-        flight_time = self.send_command('time?')
+        flight_time = self.send_command("time?")
 
         flight_time = int(flight_time)
 
@@ -107,7 +114,7 @@ class Tello(object):
             int: Current speed in KPH or MPH.
         """
 
-        speed = self.send_command('speed?')
+        speed = self.send_command("speed?")
 
         speed = float(speed)
 
@@ -124,7 +131,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.send_command('land')
+        return self.send_command("land")
 
     def move(self, direction, distance):
         """Moves in a direction for a distance.
@@ -146,7 +153,7 @@ class Tello(object):
         else:
             distance = int(round(distance * 100))
 
-        return self.send_command('%s %s' % (direction, distance))
+        return self.send_command("%s %s" % (direction, distance))
 
     def move_backward(self, distance):
         """Moves backward for a distance.
@@ -157,7 +164,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.move('back', distance)
+        return self.move("back", distance)
 
     def move_down(self, distance):
         """Moves down for a distance.
@@ -168,7 +175,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.move('down', distance)
+        return self.move("down", distance)
 
     def move_forward(self, distance):
         """Moves forward for a distance.
@@ -178,7 +185,7 @@ class Tello(object):
         Returns:
             str: Response from Tello, 'OK' or 'FALSE'.
         """
-        return self.move('forward', distance)
+        return self.move("forward", distance)
 
     def move_left(self, distance):
         """Moves left for a distance.
@@ -188,7 +195,7 @@ class Tello(object):
         Returns:
             str: Response from Tello, 'OK' or 'FALSE'.
         """
-        return self.move('left', distance)
+        return self.move("left", distance)
 
     def move_right(self, distance):
         """Moves right for a distance.
@@ -196,7 +203,7 @@ class Tello(object):
         Args:
             distance (int): Distance to move.
         """
-        return self.move('right', distance)
+        return self.move("right", distance)
 
     def move_up(self, distance):
         """Moves up for a distance.
@@ -207,7 +214,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.move('up', distance)
+        return self.move("up", distance)
 
     def send_command(self, command) -> str:
         """Sends a command to the Tello and waits for a response.
@@ -224,17 +231,17 @@ class Tello(object):
         self.abort_flag = False
         timer = threading.Timer(self.command_timeout, self.set_abort_flag)
 
-        self.socket.sendto(command.encode('utf-8'), self.tello_address)
+        self.socket.sendto(command.encode("utf-8"), self.tello_address)
 
         timer.start()
 
         while self.response is None:
             if self.abort_flag is True:
-                raise RuntimeError('No response to command')
+                raise RuntimeError("No response to command")
 
         timer.cancel()
 
-        response = self.response.decode('utf-8')
+        response = self.response.decode("utf-8")
         self.response = None
 
         return response
@@ -266,7 +273,7 @@ class Tello(object):
         else:
             speed = int(round(speed * 27.7778))
 
-        return self.send_command('speed %s' % speed)
+        return self.send_command("speed %s" % speed)
 
     def takeoff(self):
         """Initiates take-off.
@@ -274,7 +281,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.send_command('takeoff')
+        return self.send_command("takeoff")
 
     def rotate_cw(self, degrees):
         """Rotates clockwise.
@@ -284,7 +291,7 @@ class Tello(object):
             str: Response from Tello, 'OK' or 'FALSE'.
         """
 
-        return self.send_command('cw %s' % degrees)
+        return self.send_command("cw %s" % degrees)
 
     def rotate_ccw(self, degrees):
         """Rotates counter-clockwise.
@@ -293,4 +300,4 @@ class Tello(object):
         Returns:
             str: Response from Tello, 'OK' or 'FALSE'.
         """
-        return self.send_command('ccw %s' % degrees)
+        return self.send_command("ccw %s" % degrees)

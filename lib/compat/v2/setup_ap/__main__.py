@@ -2,7 +2,7 @@ import sys
 
 from lib.networking.config import setup_ap
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ssid = sys.argv[1]
     pw = sys.argv[2]
 
